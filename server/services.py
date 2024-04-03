@@ -1,3 +1,3 @@
 class Service:
-    def execute(self, data):
+    def handle(self, data):
         raise NotImplementedError("Subclasses must implement this method.")
