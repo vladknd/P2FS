@@ -1,151 +1,67 @@
-import sqlite3 as sq
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 
+# Create a base class for declarative class definitions
+Base = declarative_base()
 
-# creating the database or connecting to the already existing one 
-con = sq.connect("database_test.db")
-cur = con.cursor()
+# Define the User and File classes using SQLAlchemy ORM
+class User(Base):
+    __tablename__ = 'users'
 
-#creating the table if not already created
+    id = Column(Integer, primary_key=True)
+    port_number = Column(Integer)
 
+    files = relationship("File", back_populates="user")
 
-# ----------------------------------------------------------------------------------------------------------#
+class File(Base):
+    __tablename__ = 'files'
 
-# creatng the table clients if it does not exist and doing nothing if it does
+    id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    file = Column(String)
 
-# Check if the 'users' table exists
-cur.execute("SELECT name FROM sqlite_master WHERE name='users' ")
+    user = relationship("User", back_populates="files")
 
-# Fetch the result
-table_exists = cur.fetchone()
+# Create an engine to connect to the database
+engine = create_engine('sqlite:///database_test.db', echo=True)
 
-# If the 'users' table doesn't exist, create it
-if table_exists is None:
-    cur.execute('''CREATE TABLE users (
-                    id INTEGER PRIMARY KEY,
-                    how_to_reach TEXT NOT NULL,
-                    )''')
-    con.commit()
-    print("Table 'users' created successfully.")
+# Create the tables
+Base.metadata.create_all(engine)
 
+# Create a Session class to interact with the database
+Session = sessionmaker(bind=engine)
 
-# Close the connection
-con.close()
-# ----------------------------------------------------------------------------------------------------------#
+# Functions used to interact with the databases
+def insert_user(username, port_number):
+    session = Session()
+    user = User(id=username, port_number=port_number)
+    session.add(user)
+    session.commit()
+    session.close()
 
-
-
-
-# creating the table for storing the list of files and what user owns the file
-
-# ----------------------------------------------------------------------------------------------------------#
-
-
-# creating the connection
-con = sq.connect("database_test.db")
-cur = con.cursor()
-
-
-# creatng the table clients if it does not exist and doing nothing if it does
-
-# Check if the 'files' table exists
-cur.execute("SELECT name FROM sqlite_master WHERE name='files' ")
-
-# Fetch the result
-table_exists = cur.fetchone()
-
-# If the 'files' table doesn't exist, create it
-if table_exists is None:
-    cur.execute('''CREATE TABLE files (
-                    id INTEGER,
-                    file TEXT NOT NULL,
-                    )''')
-    con.commit()
-    print("Table 'files' created successfully.")
-
-
-# Close the connection
-con.close()
-# ----------------------------------------------------------------------------------------------------------#
-
-
-
-# Functions used to interact with the databases 
-
-
-# ----------------------------------------------------------------------------------------------------------#
-
-def insert_user(username, how_to_reach):
-    # creating the connection
-    con = sq.connect("database_test.db")
-    cur = con.cursor()
-
-    """
-    Insert a new user into the 'users' table.
-    """
-
-    cur.execute("INSERT INTO users (id, how_to_reach) VALUES (?, ?)", (username, how_to_reach))
-    con.commit()
-    # Close the connection
-    con.close()
-
-
-def insert_file(id, file):
-    # creating the connection
-    con = sq.connect("database_test.db")
-    cur = con.cursor()
-
-    """
-    Insert a new user into the 'users' table.
-    """
-    cur.execute("INSERT INTO users (id, file) VALUES (?, ?)", (id, file))
-    con.commit()
-    # Close the connection
-    con.close()
-
+def insert_file(user_id, file):
+    session = Session()
+    file_obj = File(id=user_id, file=file)
+    session.add(file_obj)
+    session.commit()
+    session.close()
 
 def fetch_all_users():
-    # creating the connection
-    con = sq.connect("database_test.db")
-    cur = con.cursor()
-
-    """
-    Fetch all users from the 'users' table.
-    """
-    cur.execute("SELECT * FROM users")
-    users  = cur.fetchall()
-    # Close the connection
-    con.close()
+    session = Session()
+    users = session.query(User).all()
+    session.close()
     return users
 
+def fetch_user_port_number(user_id):
+    session = Session()
+    user = session.query(User).filter_by(id=user_id).first()
+    port_number = user.port_number if user else None
+    session.close()
+    return port_number
 
-def fetch_user_conn_info(user):
-    # creating the connection
-    con = sq.connect("database_test.db")
-    cur = con.cursor()
-
-    """
-    Fetch the information on how to reach a user.
-    """
-    cur.execute("SELECT how_to_reach FROM users WHERE id = ?",(user))
-    info  = cur.fetchall()
-    # Close the connection
-    con.close()
-    return info
-
-
-def fetch_file_table(user):
-  
-    # creating the connection
-    con = sq.connect("database_test.db")
-    cur = con.cursor()
-
-    """
-    getting all the files that a certain user has
-    """
-    cur.execute("SELECT file FROM files WHERE id = ?",(user))
-    info  = cur.fetchall()
-    # Close the connection
-    con.close()
-    return info
-
-# ----------------------------------------------------------------------------------------------------------#
+def fetch_file_table(user_id):
+    session = Session()
+    user = session.query(User).filter_by(id=user_id).first()
+    files = [file.file for file in user.files] if user else None
+    session.close()
+    return files
