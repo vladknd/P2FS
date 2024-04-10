@@ -1,4 +1,5 @@
 import threading
+
 from c2c_tcp import Client2ClientTCPCommunication
 from c2c_udp import Client2ClientUDPCommunication
 
@@ -34,9 +35,15 @@ class Client2ClientController:
                 pass  # Wait for the server to start and get a port
         return self.tcp_comm.server_port
 
-    def handle_tcp_connection(self, conn):
-        # Implement the logic to handle incoming file data or send file data
-        pass
-
     def request_file(self, peer_ip, peer_port, request_id, file_name):
         self.udp_comm.send_file_request((peer_ip, peer_port), request_id, file_name)
+
+    def handle_udp_response(self, data, addr):
+        # This method is called whenever a UDP response is received.
+        message_type, rq_number, *args = data.split()
+        if message_type == "FILE-CONF":
+            tcp_port = int(args[0])  # Extracting the TCP port from the response
+            self.initiate_file_transfer(self.pending_file_name, tcp_port)  # Pending file name is stored when request is made
+
+    def initiate_file_transfer(self, file_name, tcp_port):
+        self.tcp_comm.connect_and_send_file(file_name, ('<peer_ip>', tcp_port))  # Placeholder for peer's IP address

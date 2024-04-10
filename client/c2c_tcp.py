@@ -43,3 +43,12 @@ class Client2ClientTCPCommunication:
         elif parts[0] == "FILE":
             FileService.write_chunk_to_file(output_file, parts[4], mode='a')
         return True
+    
+    @staticmethod
+    def connect_and_send_file(self, file_name, peer_address):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+                client_socket.connect(peer_address)
+                self.send_file_in_chunks(client_socket, "request_id", file_name)  # Assuming request_id is handled elsewhere
+        except Exception as e:
+            print(f"Failed to send file: {e}")

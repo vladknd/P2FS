@@ -21,6 +21,7 @@ class FileService:
     def write_chunk_to_file(file_path, chunk, mode='a'):
         with open(file_path, mode, encoding='utf-8') as file:
             file.write(chunk)
+            
     @staticmethod
     def prompt_user_confirmation():
         return input("Do you want to proceed with the file transfer? (y/n): ").lower() == 'y'
