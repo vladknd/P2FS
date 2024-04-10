@@ -1,14 +1,12 @@
-SERVER_IP = '192.168.1.1'
-SERVER_UDP_PORT = 10000
-CLIENT_UDP_PORT = 10001
+from c2c_controller import Client2ClientController
 
 def main():
-    udp_comm_service = UDPCommunicationService(bind_ip='0.0.0.0', bind_port=12345)
-    registration_service = RegistrationService(udp_comm_service, SERVER_IP, SERVER_UDP_PORT)
-    client2server_controller = Client2ServerController(registration_service)
+    udp_bind_port = 3005  # Example UDP port
+    controller = Client2ClientController(udp_bind_port)
+    controller.start_udp_server()
 
-    # Initialize Client2Client components similarly.
+    # Example of requesting a file from a peer (to be filled based on your application logic)
+    # controller.request_file(peer_ip='192.168.1.2', peer_port=10001, request_id='1', file_name='example.txt')
 
-    # Example Usage
-    client2server_controller.register('Alice', '192.168.1.2', 12345)
-    # Proceed with client-to-client interactions.
+if __name__ == "__main__":
+    main()
