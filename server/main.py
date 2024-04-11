@@ -24,7 +24,7 @@ def setup():
 
 def main():
     setup()
-    server = UDPServer(host='localhost', port=3000)
+    server = UDPServer(host='localhost', port=80)
     server.start()
 
 if __name__ == "__main__":

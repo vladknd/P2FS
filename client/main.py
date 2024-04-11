@@ -1,12 +1,29 @@
 from c2c_controller import Client2ClientController
 
+# def display_menu():
+#     choice = input("PRESS ENTER TO SEE THE MENU: ")
+#     return choice
+
 def main():
-    udp_bind_port = 3006  # Example UDP port
+    udp_bind_port = 80  # Example UDP port
     controller = Client2ClientController(udp_bind_port)
     controller.start_udp_server()
 
-    # Example of requesting a file from a peer (to be filled based on your application logic)
-    # controller.request_file(peer_ip='localhost', peer_port=3005, request_id='1', file_name='text.txt')
+    while True:
+        print("\nAvailable Commands:")
+        print("1. Request file from peer")
+        print("2. Exit")
+        choice = input("Enter your choice: ")
+        if choice == "1":   
+            peer_ip = input("Enter peer IP: ")
+            peer_port = input("Enter peer port: ")
+            request_id = input("Enter request ID: ")
+            file_name = input("Enter file name: ")
+            controller.request_file(peer_ip=peer_ip, peer_port=int(peer_port), request_id=request_id, file_name=file_name)
+        elif choice == "2":
+            print("Exiting...")
+            break
+    sys.exit()
 
 if __name__ == "__main__":
     main()

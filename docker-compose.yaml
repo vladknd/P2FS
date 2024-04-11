@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  server:
+    container_name: server
+    build: ./server
+    ports:
+      - "4000:80"
+    stdin_open: true
+    tty: true
+  client1:
+    container_name: client1
+    build: ./client
+    ports:
+      - "3001:80"
+    stdin_open: true
+    tty: true
+  client2:
+    container_name: client2
+    build: ./client
+    ports:
+      - "3002:80"
+    stdin_open: true
+    tty: true
