@@ -13,4 +13,3 @@ class PublishCommandHandler(CommandHandler):
         print(f"Handling PUBLISH command from {client_address}, data: {data}")
         response_message = "PUBLISHED"
         server_socket.sendto(response_message.encode(), client_address)
-

@@ -30,6 +30,9 @@ def main():
     port = s.getsockname()[1]
     s.close()
     server = Server(host=str(host), port=int(port))
+
+    # server = UDPServer(host='localhost', port=80)
+
     server.start()
 
 if __name__ == "__main__":

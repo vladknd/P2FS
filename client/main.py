@@ -5,16 +5,32 @@ from client import Client
 SERVER_IP = '192.168.1.1'
 SERVER_UDP_PORT = 10000
 CLIENT_UDP_PORT = 10001
+from c2c_controller import Client2ClientController
+
+# def display_menu():
+#     choice = input("PRESS ENTER TO SEE THE MENU: ")
+#     return choice
 
 def main():
-    # udp_comm_service = UDPCommunicationService(bind_ip='0.0.0.0', bind_port=12345)
-    # registration_service = RegistrationService(udp_comm_service, SERVER_IP, SERVER_UDP_PORT)
-    # client2server_controller = Client2ServerController(registration_service)
+    udp_bind_port = 80  # Example UDP port
+    controller = Client2ClientController(udp_bind_port)
+    controller.start_udp_server()
 
-    # # Initialize Client2Client components similarly.
+    while True:
+        print("\nAvailable Commands:")
+        print("1. Request file from peer")
+        print("2. Exit")
+        choice = input("Enter your choice: ")
+        if choice == "1":   
+            peer_ip = input("Enter peer IP: ")
+            peer_port = input("Enter peer port: ")
+            request_id = input("Enter request ID: ")
+            file_name = input("Enter file name: ")
+            controller.request_file(peer_ip=peer_ip, peer_port=int(peer_port), request_id=request_id, file_name=file_name)
+        elif choice == "2":
+            print("Exiting...")
+            break
+    sys.exit()
 
-    # # Example Usage
-    # client2server_controller.register('Alice', '192.168.1.2', 12345)
-    # # Proceed with client-to-client interactions.
-
-    client = Client(name='Alice', host=SERVER_IP, port=SERVER_UDP_PORT, udp_port=CLIENT_UDP_PORT, tcp_port=10002)
+if __name__ == "__main__":
+    main()
