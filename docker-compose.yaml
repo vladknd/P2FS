@@ -7,18 +7,27 @@ services:
     ports:
       - "4000:80"
     stdin_open: true
-    tty: true
+
   client1:
     container_name: client1
     build: ./client
-    ports:
-      - "3001:80"
+    network_mode: host
+    environment:
+      - PORT=3001
     stdin_open: true
-    tty: true
+
   client2:
     container_name: client2
     build: ./client
-    ports:
-      - "3002:80"
+    network_mode: host
+    environment:
+      - PORT=3002
     stdin_open: true
-    tty: true
+
+  client3:
+    container_name: client3
+    build: ./client
+    network_mode: host
+    environment:
+      - PORT=3003
+    stdin_open: true

@@ -12,15 +12,20 @@ class Client2ClientController:
         self.tcp_server_thread = None
 
     def handle_udp_request(self, data, addr):
+        print(f"Received UDP request: {data} from {addr}")
         message_type, rq_number, file_name = data.split(maxsplit=2)
         if message_type == "FILE-REQ":
             if FileService.file_exists(file_name):
-                if FileService.prompt_user_confirmation():
+                confirmed = FileService.prompt_user_confirmation()
+                if confirmed:
                     tcp_port = self.start_tcp_server()
+                    print(f"FILE-CONF {rq_number} {tcp_port}")
                     response = f"FILE-CONF {rq_number} {tcp_port}"
                 else:
+                    print(f"FILE-DENIED {rq_number} User denied the request.")
                     response = f"FILE-DENIED {rq_number} User denied the request."
             else:
+                print(f"FILE-ERROR {rq_number} File does not exist.")
                 response = f"FILE-ERROR {rq_number} File does not exist."
             self.udp_comm.send_response(addr, response)
 
