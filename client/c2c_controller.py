@@ -22,7 +22,7 @@ class Client2ClientController:
                     response = f"FILE-DENIED {rq_number} User denied the request."
             else:
                 response = f"FILE-ERROR {rq_number} File does not exist."
-            self.udp_comm.send_response(addr, response)
+            self.udp_comm.send_message(addr, response)
 
     def start_udp_server(self):
         threading.Thread(target=self.udp_comm.listen_for_requests, args=(self.handle_udp_request,)).start()

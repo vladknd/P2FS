@@ -6,6 +6,12 @@ class Client2ServerUDPCommunication:
         if bind_port is not None:
             self.socket.bind((bind_ip, bind_port))
 
+    def listen_for_requests(self, callback):
+        while True:
+            data, addr = self.socket.recvfrom(1024)
+            print(f"Received message from {addr}: {data.decode()}")
+            callback(data.decode(), addr)
+
     def send_message(self, message, address):
         self.socket.sendto(message.encode(), address)
 

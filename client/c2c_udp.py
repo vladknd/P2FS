@@ -13,7 +13,9 @@ class Client2ClientUDPCommunication:
         print("Listening for UDP requests...")
         while True:
             data, addr = self.socket.recvfrom(1024)
-            handle_request_callback(data.decode(), addr)
+            if data:
+                handle_request_callback(data.decode(), addr)
 
-    def send_response(self, addr, response):
-        self.socket.sendto(response.encode(), addr)
+    def send_message(self, addr, message):
+        print(f"Sending message to {addr}: {message}")
+        self.socket.sendto(message.encode(), addr)

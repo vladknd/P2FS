@@ -1,6 +1,8 @@
 import socket
 import threading
 
+from services.file_service import FileService
+
 class Client2ClientTCPCommunication:
     def __init__(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

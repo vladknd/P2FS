@@ -1,67 +1,42 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+import sqlite3
 
-# Create a base class for declarative class definitions
-Base = declarative_base()
+conn = sqlite3.connect('client_data.db')
+cursor = conn.cursor()
 
-# Define the User and File classes using SQLAlchemy ORM
-class User(Base):
-    __tablename__ = 'users'
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS clients (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        ip TEXT NOT NULL,
+        udp_port INTEGER NOT NULL
+    )
+''')
 
-    id = Column(Integer, primary_key=True)
-    port_number = Column(Integer)
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY,
+        filename TEXT NOT NULL,
+        client_id INTEGER,
+        FOREIGN KEY (client_id) REFERENCES clients(id)
+    )
+''')
 
-    files = relationship("File", back_populates="user")
+# Insert sample data into the tables (replace with your actual data)
+client_data = [
+    ('Alice', '192.168.1.100', 5000),
+    ('Bob', '192.168.1.101', 5001)
+]
 
-class File(Base):
-    __tablename__ = 'files'
+file_data = [
+    ('file1.txt', 1),  # File 'file1.txt' published by client with id 1 (Alice)
+    ('file2.txt', 2)   # File 'file2.txt' published by client with id 2 (Bob)
+]
 
-    id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    file = Column(String)
+cursor.executemany('INSERT INTO clients (name, ip, udp_port) VALUES (?, ?, ?)', client_data)
+cursor.executemany('INSERT INTO files (filename, client_id) VALUES (?, ?)', file_data)
 
-    user = relationship("User", back_populates="files")
+# Commit the changes and close the connection
+conn.commit()
+conn.close()
 
-# Create an engine to connect to the database
-engine = create_engine('sqlite:///database_test.db', echo=True)
-
-# Create the tables
-Base.metadata.create_all(engine)
-
-# Create a Session class to interact with the database
-Session = sessionmaker(bind=engine)
-
-# Functions used to interact with the databases
-def insert_user(username, port_number):
-    session = Session()
-    user = User(id=username, port_number=port_number)
-    session.add(user)
-    session.commit()
-    session.close()
-
-def insert_file(user_id, file):
-    session = Session()
-    file_obj = File(id=user_id, file=file)
-    session.add(file_obj)
-    session.commit()
-    session.close()
-
-def fetch_all_users():
-    session = Session()
-    users = session.query(User).all()
-    session.close()
-    return users
-
-def fetch_user_port_number(user_id):
-    session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
-    port_number = user.port_number if user else None
-    session.close()
-    return port_number
-
-def fetch_file_table(user_id):
-    session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
-    files = [file.file for file in user.files] if user else None
-    session.close()
-    return files
+print("Data stored successfully.")
