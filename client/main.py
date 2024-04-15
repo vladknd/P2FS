@@ -1,9 +1,10 @@
 import sys
 import os 
+import asyncio
 
 from c2c_controller import Client2ClientController
 
-def main():
+async def main():
     # udp_bind_port = 3000  # Example UDP port
     udp_bind_port = int(os.getenv('PORT'))
     print(f"UDP bind port: {udp_bind_port}")
@@ -15,12 +16,16 @@ def main():
         print("1. Request file from peer")
         print("2. Exit")
         choice = input("Enter your choice: ")
-        if choice == "1":   
-            controller.request_file(peer_ip='localhost', peer_port=3001, request_id=1, file_name="text.txt")
-        elif choice == "2":
+        if int(choice) == 1:   
+            await controller.request_file(peer_ip='localhost', peer_port=3001, request_id=1, file_name="text.txt") # hard coded values
+        elif int(choice) == 2:
             print("Exiting...")
             break
+        else:
+            print(type(int(choice)))
+            print(int(choice))
+            print('something went terribly wrong')
     sys.exit()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
