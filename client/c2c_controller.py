@@ -18,7 +18,7 @@ class Client2ClientController:
             if FileService.file_exists(file_name):
                 confirmed = FileService.prompt_user_confirmation()
                 if confirmed:
-                    tcp_port = self.start_tcp_server()
+                    tcp_port = self.x()
                     print(f"FILE-CONF {rq_number} {tcp_port}")
                     response = f"FILE-CONF {rq_number} {tcp_port}"
                 else:
