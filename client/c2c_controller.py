@@ -1,4 +1,5 @@
 import threading
+import asyncio
 
 from c2c_tcp import Client2ClientTCPCommunication
 from c2c_udp import Client2ClientUDPCommunication
@@ -11,21 +12,29 @@ class Client2ClientController:
         self.tcp_comm = Client2ClientTCPCommunication()
         self.tcp_server_thread = None
 
-    def handle_udp_request(self, data, addr):
+    async def handle_udp_request(self, data, addr):
+        print(f"Received UDP request: {data} from {addr}")
         message_type, rq_number, file_name = data.split(maxsplit=2)
         if message_type == "FILE-REQ":
             if FileService.file_exists(file_name):
-                if FileService.prompt_user_confirmation():
+                confirmed = FileService.prompt_user_confirmation()
+                if confirmed:
                     tcp_port = self.start_tcp_server()
+                    print(f"FILE-CONF {rq_number} {tcp_port}")
                     response = f"FILE-CONF {rq_number} {tcp_port}"
                 else:
+                    print(f"FILE-DENIED {rq_number} User denied the request.")
                     response = f"FILE-DENIED {rq_number} User denied the request."
             else:
+                print(f"FILE-ERROR {rq_number} File does not exist.")
                 response = f"FILE-ERROR {rq_number} File does not exist."
-            self.udp_comm.send_message(addr, response)
+            await self.udp_comm.send_message(addr, response)
 
     def start_udp_server(self):
-        threading.Thread(target=self.udp_comm.listen_for_requests, args=(self.handle_udp_request,)).start()
+        
+        #seperated the thread initialisations and starting method 
+        thread = threading.Thread(target=self.udp_comm.listen_for_requests, args=(self.handle_udp_request,))
+        thread.start() # kept the thread and inputed a async function inside of it
 
     def start_tcp_server(self):
         if not self.tcp_server_thread:
@@ -35,8 +44,8 @@ class Client2ClientController:
                 pass  # Wait for the server to start and get a port
         return self.tcp_comm.server_port
 
-    def request_file(self, peer_ip, peer_port, request_id, file_name):
-        self.udp_comm.send_file_request((peer_ip, peer_port), request_id, file_name)
+    async def request_file(self, peer_ip, peer_port, request_id, file_name):
+        await self.udp_comm.send_file_request((peer_ip, peer_port), request_id, file_name)
 
     def handle_udp_response(self, data, addr):
         # This method is called whenever a UDP response is received.
