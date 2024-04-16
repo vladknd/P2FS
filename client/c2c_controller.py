@@ -1,58 +1,56 @@
-import threading
 import asyncio
+import socket
 
-from c2c_tcp import Client2ClientTCPCommunication
 from c2c_udp import Client2ClientUDPCommunication
+from c2c_tcp import Client2ClientTCPCommunication
 
-from services.file_service import FileService
+from services.file_service import FileService  # Ensure this module is correctly implemented
 
 class Client2ClientController:
-    def __init__(self, udp_bind_port, tcp_listen_port=0):
+    def __init__(self, udp_bind_port):
         self.udp_comm = Client2ClientUDPCommunication(bind_port=udp_bind_port)
         self.tcp_comm = Client2ClientTCPCommunication()
-        self.tcp_server_thread = None
+        self.loop = asyncio.get_event_loop()
 
     async def handle_udp_request(self, data, addr):
-        print(f"Received UDP request: {data} from {addr}")
-        message_type, rq_number, file_name = data.split(maxsplit=2)
-        if message_type == "FILE-REQ":
-            if FileService.file_exists(file_name):
-                confirmed = FileService.prompt_user_confirmation()
-                if confirmed:
-                    tcp_port = self.x()
-                    print(f"FILE-CONF {rq_number} {tcp_port}")
-                    response = f"FILE-CONF {rq_number} {tcp_port}"
-                else:
-                    print(f"FILE-DENIED {rq_number} User denied the request.")
-                    response = f"FILE-DENIED {rq_number} User denied the request."
-            else:
-                print(f"FILE-ERROR {rq_number} File does not exist.")
-                response = f"FILE-ERROR {rq_number} File does not exist."
-            await self.udp_comm.send_response(addr, response)
-
-    def start_udp_server(self):
+        print(f"Received UDP data: {data} from {addr}")
+        parts = data.split()
+        header = parts[0]
         
-        #seperated the thread initialisations and starting method 
-        thread = threading.Thread(target=self.udp_comm.listen_for_requests, args=(self.handle_udp_request,))
-        thread.start() # kept the thread and inputed a async function inside of it
+        if header == "FILE-REQ":
+            file_name = parts[1]
+            await self.handle_file_request(file_name, addr)
+        elif header == "FILE-CONF":
+            tcp_port = int(parts[1])
+            self.loop.run_in_executor(None, self.tcp_comm.receive_file, addr[0], tcp_port)
+        else:
+            print("Unknown header or message format.")
 
-    def start_tcp_server(self):
-        if not self.tcp_server_thread:
-            self.tcp_server_thread = threading.Thread(target=self.tcp_comm.start_server, args=(self.handle_tcp_connection,))
-            self.tcp_server_thread.start()
-            while not self.tcp_comm.server_port:
-                pass  # Wait for the server to start and get a port
-        return self.tcp_comm.server_port
+    async def handle_file_request(self, file_name, addr):
+        print(f"Request to send file: {file_name}")
+        confirmation = await self.get_user_confirmation()
+        if confirmation.lower() == "yes":
+            tcp_port = self.find_free_port()
+            response = f"FILE-CONF {tcp_port}"
+            await self.udp_comm.send_message(addr, response)
+            self.loop.run_in_executor(None, self.tcp_comm.send_file, file_name, tcp_port)
+        else:
+            response = "FILE-DENIED"
+            await self.udp_comm.send_message(addr, response)
 
-    async def request_file(self, peer_ip, peer_port, request_id, file_name):
-        await self.udp_comm.send_file_request((peer_ip, peer_port), request_id, file_name)
+    async def get_user_confirmation(self):
+        print("Confirm file send (yes/no): ")
+        return input().strip()
 
-    def handle_udp_response(self, data, addr):
-        # This method is called whenever a UDP response is received.
-        message_type, rq_number, *args = data.split()
-        if message_type == "FILE-CONF":
-            tcp_port = int(args[0])  # Extracting the TCP port from the response
-            self.initiate_file_transfer(self.pending_file_name, tcp_port)  # Pending file name is stored when request is made
+    def find_free_port(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+            s.listen(1)
+            return s.getsockname()[1]
 
-    def initiate_file_transfer(self, file_name, tcp_port):
-        self.tcp_comm.connect_and_send_file(file_name, ('<peer_ip>', tcp_port))  # Placeholder for peer's IP address
+    async def start_udp_server(self):
+        await self.udp_comm.listen_for_requests(self.handle_udp_request)
+
+    async def request_file(self, peer_ip, peer_port, file_name):
+        message = f"FILE-REQ {file_name}"
+        await self.udp_comm.send_message((peer_ip, peer_port), message)
