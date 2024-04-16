@@ -1,8 +1,6 @@
 import threading
 import time
 
-from response_handler import ResponseHandler
-
 class RequestHandler: 
     def __init__(self, server_db, server_socket):
         self.server_db = server_db
@@ -12,8 +10,6 @@ class RequestHandler:
     def register(self, args):
         message, *client_address = args
         message_type, request_number, name, ip_address, udp_port = message.split()
-
-        # Check if client name or ip address is already registered in database
         if not self.server_db.check_client(name, ip_address): 
             self.server_db.insert_client(name, ip_address, udp_port)
             response = "REGISTERED"
@@ -40,7 +36,6 @@ class RequestHandler:
         message, *client_address = args
         message_type, request_number, name, *files = message.split()
         files = [file.strip("[''],") for file in files]
-
         if self.server_db.check_client(name):
             self.server_db.insert_files(name, files)
             response = "PUBLISHED"
@@ -57,7 +52,6 @@ class RequestHandler:
         message, *client_address = args
         message_type, request_number, name, *files = message.split()
         files = [file.strip("[''],") for file in files]
-
         if self.server_db.check_client(name):
             self.server_db.delete_files(name, files)
             response = "REMOVED"

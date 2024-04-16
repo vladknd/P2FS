@@ -29,8 +29,9 @@ def main():
     host = s.getsockname()[0]
     port = s.getsockname()[1]
     s.close()
+    print(host, port)
     # server = Server(host=str(host), port=int(port))
-    server = Server(host='localhost', port=3001)
+    server = Server(host=host, port=3001)
 
     # server = UDPServer(host='localhost', port=80)
 

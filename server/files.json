@@ -1,7 +1,8 @@
 [
     {
-        "client_name": "client1",
+        "client_name": "client",
         "files": [
+            "text.txt",
             "sample.txt"
         ]
     }

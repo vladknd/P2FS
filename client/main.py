@@ -16,7 +16,7 @@ def main():
     # controller = Client2ClientController(udp_bind_port)
     # controller.start_udp_server()
 
-    client = Client(name="client1", host='localhost', udp_port=udp_bind_port, tcp_port=0)
+    client = Client(name="client", host='localhost', udp_port=udp_bind_port, tcp_port=0)
     client.start()
 
     # client.request_to_server("PUBLISH", ["text.txt", "sample.txt"])

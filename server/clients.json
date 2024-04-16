@@ -1,8 +1,14 @@
 [
     {
-        "id": 1,
-        "name": "client1",
+        "id": 2,
+        "name": "client",
         "ip": "localhost",
         "udp_port": "3000"
+    },
+    {
+        "id": 2,
+        "name": "client1",
+        "ip": "172.20.10.6",
+        "udp_port": "60109"
     }
 ]

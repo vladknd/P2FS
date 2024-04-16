@@ -55,7 +55,7 @@ class Server:
     def update_handler(self):
         while True:
             self.current_time = time.time()
-            if self.current_time - self.start_time >= 20:
+            if self.current_time - self.start_time >= 300:
                 self.start_time = time.time() # Reset the timer
                 send_update = threading.Thread(target=self.send_update_message).start()
 

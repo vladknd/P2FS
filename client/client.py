@@ -16,7 +16,7 @@ class Client:
         self.tcp_comm = Client2ClientTCPCommunication()
         self.tcp_server_thread = None
         self.request_number = 0
-        self.server_host = 'localhost'
+        self.server_host = '172.20.10.2'
         self.server_port = 3001
         self.file_list = []
         self.clients_information = []
