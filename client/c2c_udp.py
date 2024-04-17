@@ -14,4 +14,5 @@ class Client2ClientUDPCommunication:
         print(f"Listening for UDP requests on port {self.socket.getsockname()[1]}...")
         while True:
             data, addr = self.socket.recvfrom(1024)
+            print(f"Received UDP data: {data} from {addr}")
             await handle_request_callback(data.decode(), addr)

@@ -4,8 +4,6 @@ import socket
 from c2c_udp import Client2ClientUDPCommunication
 from c2c_tcp import Client2ClientTCPCommunication
 
-from services.file_service import FileService  # Ensure this module is correctly implemented
-
 class Client2ClientController:
     def __init__(self, udp_bind_port):
         self.udp_comm = Client2ClientUDPCommunication(bind_port=udp_bind_port)
@@ -27,13 +25,23 @@ class Client2ClientController:
             print("Unknown header or message format.")
 
     async def handle_file_request(self, file_name, addr):
+        file_path = f"./files/{file_name}.txt"
         print(f"Request to send file: {file_name}")
+        
+        # Check if the file exists
+        if not os.path.exists(file_path):
+            print(f"File {file_name} does not exist.")
+            response = "FILE-DENIED"
+            await self.udp_comm.send_message(addr, response)
+            return
+        
         confirmation = await self.get_user_confirmation()
         if confirmation.lower() == "yes":
             tcp_port = self.find_free_port()
             response = f"FILE-CONF {tcp_port}"
             await self.udp_comm.send_message(addr, response)
             self.loop.run_in_executor(None, self.tcp_comm.send_file, file_name, tcp_port)
+
         else:
             response = "FILE-DENIED"
             await self.udp_comm.send_message(addr, response)

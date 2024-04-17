@@ -19,7 +19,7 @@ def run_user_interface(controller):
             file_name = input("Enter file name to request: ")
             asyncio.run_coroutine_threadsafe(
                 controller.request_file(peer_ip, peer_port, file_name),
-                asyncio.get_running_loop()
+                loop
             )
         elif choice == '2':
             print("Exiting...")
@@ -28,15 +28,15 @@ def run_user_interface(controller):
             print("Invalid choice. Please try again.")
 
 async def main():
-    udp_bind_port = int(os.getenv('PORT'))
-    print(f"UDP bind port: {udp_bind_port}")
+    # udp_bind_port = int(os.getenv('PORT'))
+    # print(f"UDP bind port: {udp_bind_port}")
 
-    controller = Client2ClientController(udp_bind_port)
+    controller = Client2ClientController(udp_bind_port=3001)
 
     # Start the UDP server as a background task
     udp_task = asyncio.create_task(controller.start_udp_server()) 
     # Run user interface in a separate thread
-    ui_thread = threading.Thread(target=run_user_interface, args=(controller,))
+    ui_thread = threading.Thread(target=run_user_interface, args=(controller))
     ui_thread.start()
 
     # Wait for the UDP task and UI thread to finish (UI thread should run indefinitely unless exited)
