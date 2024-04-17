@@ -28,7 +28,7 @@ class Client2ClientController:
             else:
                 print(f"FILE-ERROR {rq_number} File does not exist.")
                 response = f"FILE-ERROR {rq_number} File does not exist."
-            await self.udp_comm.send_message(addr, response)
+            await self.udp_comm.send_response(addr, response)
 
     def start_udp_server(self):
         

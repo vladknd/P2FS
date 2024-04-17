@@ -46,7 +46,6 @@ class Database:
                 print(f"Deleted files: {files}")
         self.save_data()
         
-
     def check_client(self, name, ip=None):
         if ip is None:
             return any(client['name'] == name for client in self.clients_data)
@@ -64,6 +63,13 @@ class Database:
             if client['name'] == name:
                 return client['ip'], client['udp_port']
         return None, None
+    
+    def update_client(self, name, ip, udp_port):
+        for client in self.clients_data:
+            if client['name'] == name:
+                client['ip'] = ip
+                client['udp_port'] = udp_port
+        self.save_data()
 
     def get_clients(self):
         return self.clients_data

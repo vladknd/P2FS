@@ -21,6 +21,7 @@ class Server:
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.server_socket.bind((self.host, self.port))
+            self.request_handler = RequestHandler(self.db, self.server_socket)
         except socket.error as e:
             print('Failed to create/bind socket. Error Code : ' + str(e))
             sys.exit()
@@ -60,7 +61,9 @@ class Server:
                 send_update = threading.Thread(target=self.send_update_message).start()
 
     def send_update_message(self):
+        self.db = self.request_handler.server_db
         self.clients = self.db.get_clients()
+        print(f"Current clients: {self.clients}")
         message = "UPDATE"
         clients_list = []
         for client in self.clients:
@@ -78,19 +81,21 @@ class Server:
             print(f"Sent update message to {ip_address}:{port}")
         
     def handle_request(self, args):
-        request_handler = RequestHandler(self.db, self.server_socket)
+        self.request_handler.server_db = self.db
         message, ip_address, port = args
         message_type, *rest = message.split()
         print(f"Received message from {ip_address}:{port}: {message}")
         print(message_type, args)
         if message_type == "REGISTER":
-            resp = request_handler.register(args)
+            resp = self.request_handler.register(args)
         elif message_type == "DE-REGISTER":
-            resp = request_handler.deregister(args)
+            resp = self.request_handler.deregister(args)
         elif message_type == "PUBLISH":
-            resp = request_handler.publish(args)
+            resp = self.request_handler.publish(args)
         elif message_type == "REMOVE":
-            resp = request_handler.remove(args)
+            resp = self.request_handler.remove(args)
+        elif message_type == "UPDATE-CONTACT":
+            resp = self.request_handler.update_contacts(args)
         else:
             print("Invalid message type")
             resp = "INVALID"

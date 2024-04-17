@@ -16,7 +16,8 @@ def main():
     # controller = Client2ClientController(udp_bind_port)
     # controller.start_udp_server()
 
-    client = Client(name="client", host='localhost', udp_port=udp_bind_port, tcp_port=0)
+    # server_host = input("Enter server IP address: ")
+    client = Client(name="Rainbow", host='localhost', udp_port=udp_bind_port, tcp_port=0, server_host='172.30.35.72')
     client.start()
 
     # client.request_to_server("PUBLISH", ["text.txt", "sample.txt"])
@@ -28,7 +29,8 @@ def main():
         print("3. Publish files to server")
         print("4. Remove files from server")
         print("5. Request file from peer")
-        print("6. Exit")
+        print("6. Update contact information")
+        print("7. Exit")
         choice = input("Enter your choice: ")
         if choice == "1":
             print("Registering with server...")
@@ -56,6 +58,11 @@ def main():
             file_name = input("Enter file name: ")
             client.request_file(peer_ip=peer_ip, peer_port=int(peer_port), request_id=request_id, file_name=file_name)
         elif choice == "6":
+            ip_address = input("Enter the new IP address: ")
+            port = input("Enter the new port: ")
+            client.request_to_server("UPDATE-CONTACT", ip_address=ip_address, udp_port=port)
+            print("Updating contact...")
+        elif choice == "7":
             print("Exiting...")
             break
     sys.exit()

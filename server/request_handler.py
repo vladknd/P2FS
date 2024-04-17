@@ -25,6 +25,7 @@ class RequestHandler:
     def deregister(self, args):
         message, *client_address = args
         message_type, request_number, name = message.split()
+        response = "INVALID"
 
         if self.server_db.check_client(name):
             self.server_db.delete_client(name)
@@ -58,6 +59,22 @@ class RequestHandler:
             response_message = f"{response} {request_number}"
         else:
             response = "REMOVE-DENIED"
+            reason = "Client name not registered."
+            response_message = f"{response} {request_number} {reason}"
+        thread = threading.Thread(target=self.send_response, args=((response_message, client_address),)).start()
+        self.threads.append(thread)
+        return response
+    
+    def update_contacts(self, args):
+        message, *client_address = args
+        message_type, request_number, name, ip_address, udp_port = message.split()
+        if self.server_db.check_client(name):
+            self.server_db.update_client(name, ip_address, udp_port)
+            response = "UPDATE-CONFIRMED"
+            response_message = f"{response} {request_number} {name} {ip_address} {udp_port}"
+            client_address = (ip_address, udp_port)
+        else:
+            response = "UPDATE-DENIED"
             reason = "Client name not registered."
             response_message = f"{response} {request_number} {reason}"
         thread = threading.Thread(target=self.send_response, args=((response_message, client_address),)).start()
