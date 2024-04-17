@@ -1,7 +1,9 @@
 import socket
+import threading
 
 class Client2ClientTCPCommunication:
     def receive_file(self, server_ip, server_port):
+        print(f"Running in thread: {threading.current_thread().name}")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             # Connect to the specified IP and port
             sock.connect((server_ip, server_port))
@@ -11,16 +13,18 @@ class Client2ClientTCPCommunication:
             file_name = None  # Variable to store the file name once it's retrieved
             while True:
                 # Receive data in blocks of 1024 bytes
-                data = sock.recv(1024).decode('utf-8')
+                data = sock.recv(200).decode('utf-8')
                 
                 # Check if this is the last chunk
                 if "FILE-END" in data:
                     prefix, rq, file_name, chunk_number, text = data.split(maxsplit=4)
                     print(f"ALl we got from data split is {prefix} - {rq} - {file_name} - {chunk_number} - {text}")
+                    print(f"RECEIVING CHUNK #: {chunk_number} - {text}")
                     file_content.append((int(chunk_number), text))
                     break  # Exit the loop since it's the last chunk
                 else:
-                    prefix, file_name, chunk_number, text = data.split(maxsplit=3)
+                    prefix, rq, file_name, chunk_number, text = data.split(maxsplit=4)
+                    print(f"RECEIVING CHUNK #: {chunk_number} - {text}")
                     file_content.append((int(chunk_number), text))
 
             # Sort the file content by chunk number (tuple first element)
@@ -36,6 +40,7 @@ class Client2ClientTCPCommunication:
                 print("Error: File name could not be determined.")
 
     def send_file(self, file_name, tcp_port):
+        print(f"Running in thread: {threading.current_thread().name}")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             # Bind the socket to all available IPs and the specified TCP port
             server_socket.bind(('', tcp_port))
@@ -59,9 +64,11 @@ class Client2ClientTCPCommunication:
                             break
                         if len(bytes_read) < 200:
                             # This is the last chunk as it contains less than 200 bytes
+                            print(f"SENDING CHUNK #: {chunk_number} - {bytes_read.decode()}")
                             message = f"FILE-END RQ# {file_name} {chunk_number} {bytes_read.decode()}"
                         else:
                             # Format the message for a regular chunk
+                            print(f"SENDING CHUNK #: {chunk_number} - {bytes_read.decode()}")
                             message = f"FILE RQ# {file_name} {chunk_number} {bytes_read.decode()}"
                         
                         # Send the formatted message
