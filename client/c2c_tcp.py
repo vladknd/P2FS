@@ -12,19 +12,19 @@ class Client2ClientTCPCommunication:
             file_content = []
             file_name = None  # Variable to store the file name once it's retrieved
             while True:
-                # Receive data in blocks of 1024 bytes
                 data = sock.recv(200).decode('utf-8')
-                
+                print(f"Received DATA:>>> {data}")
                 # Check if this is the last chunk
                 if "FILE-END" in data:
                     prefix, rq, file_name, chunk_number, text = data.split(maxsplit=4)
-                    print(f"ALl we got from data split is {prefix} - {rq} - {file_name} - {chunk_number} - {text}")
-                    print(f"RECEIVING CHUNK #: {chunk_number} - {text}")
+                    print(f"ALl we got from data split is {prefix} - {rq} - {file_name} - {chunk_number} - {text} >>>>>")
+                    print(f"RECEIVING CHUNK #: {chunk_number} - {text} END OF TEXT")
                     file_content.append((int(chunk_number), text))
                     break  # Exit the loop since it's the last chunk
                 else:
                     prefix, rq, file_name, chunk_number, text = data.split(maxsplit=4)
-                    print(f"RECEIVING CHUNK #: {chunk_number} - {text}")
+                    print(f"ALl we got from data split is {prefix} - {rq} - {file_name} - {chunk_number} - {text}>>>>>")
+                    print(f"RECEIVING CHUNK #: {chunk_number} - {text} END OF TEXT")
                     file_content.append((int(chunk_number), text))
 
             # Sort the file content by chunk number (tuple first element)
@@ -58,18 +58,26 @@ class Client2ClientTCPCommunication:
                 with open(f'./files/{file_name}.txt', 'rb') as f:
                     while True:
                         # Read up to 200 bytes from the file
-                        bytes_read = f.read(200)
+                        header = f"FILE RQ# {file_name} {chunk_number} "
+                        header_length = len(header)
+                        body_size = 200 - header_length
+                        bytes_read = f.read(body_size)
+                        message_size = header_length + bytes_read.__sizeof__()
+                        print(f"Sizes are HEADER>>{header_length}  BODY>>{body_size} - MSG>>{message_size} - FILE>>{bytes_read}")
+
                         if not bytes_read:
                             # No more bytes are read from the file
                             break
-                        if len(bytes_read) < 200:
+                        if message_size < 200:
                             # This is the last chunk as it contains less than 200 bytes
                             print(f"SENDING CHUNK #: {chunk_number} - {bytes_read.decode()}")
                             message = f"FILE-END RQ# {file_name} {chunk_number} {bytes_read.decode()}"
+                            print(f"END message to be sent is {message}")
                         else:
                             # Format the message for a regular chunk
                             print(f"SENDING CHUNK #: {chunk_number} - {bytes_read.decode()}")
                             message = f"FILE RQ# {file_name} {chunk_number} {bytes_read.decode()}"
+                            print(f"message to be sent is {message}")
                         
                         # Send the formatted message
                         client_socket.sendall(message.encode())

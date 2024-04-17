@@ -28,7 +28,7 @@ async def main():
     # udp_bind_port = int(os.getenv('PORT'))
     # print(f"UDP bind port: {udp_bind_port}")
     tcp = Client2ClientTCPCommunication()
-    udp = Client2ClientUDPCommunication(loop, tcp, '127.0.0.1', 3001)
+    udp = Client2ClientUDPCommunication(loop, tcp, '127.0.0.1', 3000)
     await asyncio.create_task(udp.start_server()) 
 
     controller = Client2ClientController(udp, tcp, loop)
