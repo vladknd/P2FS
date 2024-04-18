@@ -1,14 +1,8 @@
 [
     {
         "id": 1,
-        "name": "Rainbow",
-        "ip": "localhost",
-        "udp_port": "3000"
-    },
-    {
-        "id": 2,
-        "name": "Vlad",
-        "ip": "192.168.0.11",
-        "udp_port": "3000"
+        "name": "dash",
+        "ip": "10.0.0.236",
+        "udp_port": "3002"
     }
 ]

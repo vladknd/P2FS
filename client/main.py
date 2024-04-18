@@ -36,7 +36,6 @@ async def run_user_interface(loop, controller, input_lock):
                 print("Deregistering with server...")
                 await asyncio.create_task(controller.request_to_server("DE-REGISTER"))
             elif choice == "3":
-
                 print("Publishing files to server...")
                 file_choice = "y"
                 file_names = []
@@ -46,8 +45,14 @@ async def run_user_interface(loop, controller, input_lock):
                     file_choice = await aioconsole.ainput("Would you like to enter another file name? (y/n)")
                 await asyncio.create_task(controller.request_to_server("PUBLISH", file_names))
             elif choice == "4":
-                
                 print("Removing files from server...")
+                file_choice = "y"
+                file_names = []
+                while file_choice == "y":
+                    file_name = await aioconsole.ainput("Enter file name: ")
+                    file_names.append(file_name)
+                    file_choice = await aioconsole.ainput("Would you like to enter another file name? (y/n)")
+                await asyncio.create_task(controller.request_to_server("REMOVE", file_names))
             elif choice == "5":
                 print("Requesting file from peer...")
                 peer_ip = await aioconsole.ainput("Enter peer IP: ")
@@ -72,10 +77,15 @@ async def main():
     input_lock = asyncio.Lock()
     # udp_bind_port = int(os.getenv('PORT'))
     # print(f"UDP bind port: {udp_bind_port}")
-    local_ip = socket.gethostbyname(socket.gethostname())
-    # local_ip = "localhost"
+    # local_ip = socket.gethostbyname(socket.gethostname())
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    host = s.getsockname()[0]
+    port = s.getsockname()[1]
+    s.close()
+
     tcp = Client2ClientTCPCommunication()
-    udp = Client2ClientUDPCommunication(loop, tcp, local_ip, udp_bind_port, input_lock)
+    udp = Client2ClientUDPCommunication(loop, tcp, host, udp_bind_port, input_lock)
     controller = Client2ClientController(loop, udp, tcp, name, server_host, server_port)
     await asyncio.create_task(udp.start_server()) 
     await asyncio.create_task(run_user_interface(loop, controller, input_lock))

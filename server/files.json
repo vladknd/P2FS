@@ -1,29 +1,10 @@
 [
     {
-        "client_name": "Rainbow",
+        "client_name": "dash",
         "files": [
-            "sample.txt"
-        ]
-    },
-    {
-        "client_name": "Vlad",
-        "files": [
-            "text.txt",
-            "sample.txt"
-        ]
-    },
-    {
-        "client_name": "Vlad",
-        "files": [
-            "text.txt",
-            "sample.txt"
-        ]
-    },
-    {
-        "client_name": "Vlad",
-        "files": [
-            "text.txt",
-            "newfile.txt"
+            "newfile.txt",
+            "hi.txt",
+            "text.txt"
         ]
     }
 ]

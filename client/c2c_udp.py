@@ -24,7 +24,6 @@ class Client2ClientUDPCommunication:
             print("Failed to initialize UDP server")
 
     async def handle_udp_request(self, data, addr):
-        print(f"Received UDP data: {data} from {addr}")
         parts = data.split()
         header = parts[0]
         args = parts[1:]
@@ -32,19 +31,25 @@ class Client2ClientUDPCommunication:
         
         if message_type == "REGISTERED":
             print("Registered with server")
+            print(data)
         elif message_type == "REGISTER-DENIED":
             print("Registration denied")
+            print(data)
         elif message_type == "PUBLISHED":
             print("Published files to server")
+            print(data)
         elif message_type == "PUBLISH-DENIED":
             print("Publish denied")
+            print(data)
         elif message_type == "REMOVED":
             print("Removed files from server")
+            print(data)
         elif message_type == "REMOVE-DENIED":
             print("Remove denied")
+            print(data)
         elif message_type == "UPDATE":
             print("Received update from server")
-            print(args)
+            print(data)
             self.clients_information = args
         elif message_type == "UPDATE-CONFIRMED":
             print("Received update contact from server")
@@ -76,7 +81,7 @@ class Client2ClientUDPCommunication:
             
     def datagram_received(self, data, addr):
         message = data.decode()
-        print(f"Received UDP data: {message} from {addr}")
+        # print(f"Received UDP data: {message} from {addr}")
         asyncio.create_task(self.handle_udp_request(message, addr))
 
     async def send_message(self, addr, message):

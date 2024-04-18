@@ -39,12 +39,24 @@ class Database:
         self.save_data()
 
     def delete_files(self, name, files):
-        for file in self.files_data:
-            print(file)
-            if file['client_name'] == name:
-                file['files'] = [f for f in file['files'] if f not in files]
-                print(f"Deleted files: {files}")
-        self.save_data()
+        client_entry = None
+        for entry in self.files_data:
+            if entry['client_name'] == name:
+                client_entry = entry
+                break
+
+        if client_entry:
+            # Remove the specified files from the client's file list
+            client_files = client_entry['files']
+            for file_to_delete in files:
+                if file_to_delete in client_files:
+                    client_files.remove(file_to_delete)
+            
+            # Save the updated data
+            self.save_data()
+            print(f"Files {', '.join(files)} deleted for client {name}")
+        else:
+            print(f"Client {name} not found")
         
     def check_client(self, name, ip=None):
         if ip is None:
@@ -52,11 +64,26 @@ class Database:
         return any(client['name'] == name or client['ip'] == ip for client in self.clients_data)
 
     def save_data(self):
-        # Save data to JSON files
+        # Save data to JSON files, restructuring files data to group files by client
         with open(self.clients_file, 'w') as clients_file:
             json.dump(self.clients_data, clients_file, indent=4)
         with open(self.files_file, 'w') as files_file:
-            json.dump(self.files_data, files_file, indent=4)
+            # Restructure files data to group files by client
+            client_files = {}
+            for file_entry in self.files_data:
+                client_name = file_entry['client_name']
+                file_list = file_entry['files']
+                if client_name in client_files:
+                    client_files[client_name].extend(file_list)
+                else:
+                    client_files[client_name] = file_list
+
+            for client_name, files in client_files.items():
+                client_files[client_name] = list(set(files))
+            
+            restructured_files_data = [{'client_name': client_name, 'files': files} for client_name, files in client_files.items()]
+            self.files_data = restructured_files_data
+            json.dump(restructured_files_data, files_file, indent=4)
 
     def get_client(self, name):
         for client in self.clients_data:
@@ -75,9 +102,11 @@ class Database:
         return self.clients_data
     
     def get_files(self, name):
-        for file in self.files_data:
-            if file['client_name'] == name:
-                return file['files']
+        print("GET FILES")
+        print(self.files_data)
+        for entry in self.files_data:
+            if entry['client_name'] == name:
+                return entry['files']
         return []
     
     def close(self):
