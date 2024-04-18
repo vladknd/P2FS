@@ -16,15 +16,49 @@ def startup():
 
 async def run_user_interface(loop, controller): 
     while True:
-        print("\nOptions:")
-        print("1. Request a file from a peer")
-        print("2. Exit")
+        print("\nAvailable Commands:")
+        print("1. Register with server")
+        print("2. Deregister with server")
+        print("3. Publish files to server")
+        print("4. Remove files from server")
+        print("5. Request file from peer")
+        print("6. Update contact information")
+        print("7. Exit")
         choice = await loop.run_in_executor(None, input, "Enter your choice: ")
-        if choice == '1':
-            await asyncio.create_task(controller.request_file('132.205.46.65', 3005, 'newfile'))
-        elif choice == '2':
+
+        if choice == "1":
+            print("Registering with server...")
+            await asyncio.create_task(controller.request_to_server("REGISTER"))
+        elif choice == "2":
+            print("Deregistering with server...")
+            await asyncio.create_task(controller.request_to_server("DE-REGISTER"))
+        elif choice == "3":
+            print("Publishing files to server...")
+            await asyncio.create_task(controller.request_to_server("PUBLISH", ["text.txt", "sample.txt"]))
+        elif choice == "4":
+            file_choice = "y"
+            file_names = []
+            while file_choice == "y":
+                file_name = input("Enter file name: ")
+                file_names.append(file_name)
+                file_choice = input("Would you like to enter another file name? (y/n)")
+            await asyncio.create_task(controller.request_to_server("REMOVE", file_names))
+            print("Removing files from server...")
+        elif choice == "5":
+            print("Requesting file from peer...")
+            peer_ip = input("Enter peer IP: ")
+            peer_port = input("Enter peer port: ")
+            request_id = input("Enter request ID: ")
+            file_name = input("Enter file name: ")
+            await asyncio.create_task(controller.request_file(peer_ip=peer_ip, peer_port=int(peer_port), request_id=request_id, file_name=file_name))
+        elif choice == "6":
+            ip_address = input("Enter the new IP address: ")
+            port = input("Enter the new port: ")
+            await asyncio.create_task(controller.request_to_server("UPDATE-CONTACT", ip_address=ip_address, udp_port=port))
+            print("Updating contact...")
+        elif choice == "7":
             print("Exiting...")
-            return  # Exit the interface and stop the program
+            break
         else:
             print("Invalid choice. Please try again.")
 

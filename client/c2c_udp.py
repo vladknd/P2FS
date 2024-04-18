@@ -26,7 +26,8 @@ class Client2ClientUDPCommunication:
         parts = data.split()
         header = parts[0]
         args = parts[1:]
-
+        message_type, *args = data.split()
+        
         if message_type == "REGISTERED":
             print("Registered with server")
         elif message_type == "REGISTER-DENIED":
