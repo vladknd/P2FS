@@ -14,7 +14,7 @@ async def run_user_interface(loop, controller):
         print("2. Exit")
         choice = await loop.run_in_executor(None, input, "Enter your choice: ")
         if choice == '1':
-            await asyncio.create_task(controller.request_file('132.205.46.65', 3000, 'newfile')
+            await asyncio.create_task(controller.request_file('132.205.46.65', 3005, 'newfile')
     )
         elif choice == '2':
             print("Exiting...")
@@ -28,7 +28,7 @@ async def main():
     # udp_bind_port = int(os.getenv('PORT'))
     # print(f"UDP bind port: {udp_bind_port}")
     tcp = Client2ClientTCPCommunication()
-    udp = Client2ClientUDPCommunication(loop, tcp, '127.0.0.1', 3000)
+    udp = Client2ClientUDPCommunication(loop, tcp, '127.0.0.1', 3005)
     await asyncio.create_task(udp.start_server()) 
 
     controller = Client2ClientController(udp, tcp, loop)
