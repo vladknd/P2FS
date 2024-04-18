@@ -14,7 +14,7 @@ async def run_user_interface(loop, controller):
         print("2. Exit")
         choice = await loop.run_in_executor(None, input, "Enter your choice: ")
         if choice == '1':
-            await asyncio.create_task(controller.request_file('127.0.0.1', 3001, 'newfile')
+            await asyncio.create_task(controller.request_file('132.205.46.65', 3000, 'newfile')
     )
         elif choice == '2':
             print("Exiting...")
