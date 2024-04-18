@@ -4,6 +4,7 @@ import threading
 class Client2ClientTCPCommunication:
     def __init__(self):
         self.rq = 0
+        # self.lock = threading.Lock()
 
     def receive_file(self, server_ip, server_port):
         print(f"Running in thread: {threading.current_thread().name}")
@@ -12,6 +13,7 @@ class Client2ClientTCPCommunication:
             sock.connect((server_ip, server_port))
             print(f"Connected to TCP server at {server_ip}:{server_port}")
 
+            # self.lock.acquire()
             file_content = []
             file_name = None  # Variable to store the file name once it's retrieved
             while True:
@@ -30,6 +32,7 @@ class Client2ClientTCPCommunication:
                     print(f"RECEIVING CHUNK #: {chunk_number} - {text} END OF TEXT")
                     file_content.append((int(chunk_number), text))
 
+            # self.lock.release()
             # Sort the file content by chunk number (tuple first element)
             file_content.sort()
             

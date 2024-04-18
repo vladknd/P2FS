@@ -4,7 +4,6 @@ import threading
 import time 
 import sqlite3
 
-from controller import Controller 
 from request_handler import RequestHandler
 from server_db import Database
 

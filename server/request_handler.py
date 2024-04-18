@@ -10,7 +10,7 @@ class RequestHandler:
     def register(self, args):
         message, *client_address = args
         message_type, request_number, name, ip_address, udp_port = message.split()
-        if not self.server_db.check_client(name, ip_address): 
+        if not self.server_db.check_client(name): 
             self.server_db.insert_client(name, ip_address, udp_port)
             response = "REGISTERED"
             response_message = f"{response} {request_number}"
