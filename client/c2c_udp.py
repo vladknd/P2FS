@@ -1,6 +1,6 @@
 import asyncio
 import socket
-import os 
+import os
 
 class Client2ClientUDPCommunication:
     def __init__(self, loop, tcp, bind_ip='127.0.0.1', bind_port=3000):
@@ -81,6 +81,7 @@ class Client2ClientUDPCommunication:
         if not self.transport:
             print("Transport not initialized, message not sent")
             return  # Prevents trying to send message if transport is not available
+
         print(f"Sending UDP message: {message} to {addr}")
         self.transport.sendto(message.encode(), addr)
         print(f"Sent UDP message: {message} to {addr}")

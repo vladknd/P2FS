@@ -34,8 +34,31 @@ async def run_user_interface(loop, controller):
             print("Deregistering with server...")
             await asyncio.create_task(controller.request_to_server("DE-REGISTER"))
         elif choice == "3":
+
             print("Publishing files to server...")
-            await asyncio.create_task(controller.request_to_server("PUBLISH", ["text.txt", "sample.txt"]))
+            # check if file exist in the directory ask to add another file
+            # to break enter some breakpoint
+            # Check if the file exists
+            list = []
+            files_directory = os.getcwd()
+            files_directory = os.path.join(files_directory, "files")
+            while True:
+                choice = await aioconsole.ainput("Enter the name of the file to publish: ")
+                file_path = os.path.join(files_directory, choice)
+                if os.path.exists(file_path) and len(choice) > 0:
+                    print(choice)
+                    print(len(choice))
+                    print("the file exists")
+                    # add it to the list of files
+                    list.append(choice)
+                elif not choice or len(choice) == 0:
+                    print('exiting function')
+                    break
+                else:
+                    print(choice)
+                    print("The file does not exist, enter a valid name file")
+
+            await asyncio.create_task(controller.request_to_server("PUBLISH", list))
         elif choice == "4":
             file_choice = "y"
             file_names = []
@@ -64,6 +87,7 @@ async def run_user_interface(loop, controller):
             print("Invalid choice. Please try again.")
 
 async def main():
+
     await startup()
     udp_bind_port = 3000
     # name, server_host, server_port = startup()
