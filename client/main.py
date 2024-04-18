@@ -9,11 +9,10 @@ from c2c_controller import Client2ClientController
 from c2c_udp import Client2ClientUDPCommunication
 from c2c_tcp import Client2ClientTCPCommunication
 
-def startup():
-    name = input("Enter your name: ")
+async def startup():
     server_host = input("Enter the server host: ")
     server_port = int(input("Enter the server port: "))
-    return name, server_host, server_port
+    return server_host, server_port
 
 async def run_user_interface(loop, controller): 
     while True:
@@ -65,6 +64,7 @@ async def run_user_interface(loop, controller):
             print("Invalid choice. Please try again.")
 
 async def main():
+    await startup()
     udp_bind_port = 3000
     # name, server_host, server_port = startup()
     loop = asyncio.get_running_loop()
