@@ -4,12 +4,13 @@ import os
 import aioconsole
 
 class Client2ClientUDPCommunication:
-    def __init__(self, loop, tcp, bind_ip='127.0.0.1', bind_port=3000):
+    def __init__(self, loop, tcp, bind_ip='127.0.0.1', bind_port=3000, input_lock=None):
         self.tcp_comm = tcp
         self.bind_ip = bind_ip
         self.bind_port = bind_port
         self.loop = loop
         self.transport = None
+        self.input_lock = input_lock
 
     async def start_server(self):
         self.transport, _ = await self.loop.create_datagram_endpoint(
@@ -91,34 +92,35 @@ class Client2ClientUDPCommunication:
         file_path = f"./files/{file_name}.txt"
         print(f"Request to send file: {file_name}")
         
-        # Print the files available in the path
-        files = os.listdir("./files")
-        print("Available files:")
-        for file in files:
-            print(file)
+        async with self.input_lock:
+            # Print the files available in the path
+            files = os.listdir("./files")
+            print("Available files:")
+            for file in files:
+                print(file)
 
-        # Check if the file exists
-        if not os.path.exists(file_path):
-            print(f"File {file_name} does not exist.")
-            response = "FILE-DENIED"
-            await self.send_message(addr, response)
-            return
+            # Check if the file exists
+            if not os.path.exists(file_path):
+                print(f"File {file_name} does not exist.")
+                response = "FILE-DENIED"
+                await self.send_message(addr, response)
+                return
 
-        # confirmation = await aioconsole.ainput("Confirm file send (y/n): ")
-        confirmation = await aioconsole.ainput("Confirm file send (y/n): ")
+            os.system('clear')
+            confirmation = await aioconsole.ainput("Confirm file send (y/n): ")
+            
+            if confirmation.strip().lower() == "y":
+                # else:
+                tcp_port = self.tcp_comm.find_free_port()
+                response = f"FILE-CONF {tcp_port}"
+                print(f"Sending file {file_name} to {addr} on port {tcp_port}")
+                await self.send_message(addr, response)
+                print(f"Sending file {file_name} to {addr} on port {tcp_port}")
+                self.loop.run_in_executor(None, self.tcp_comm.send_file, file_name, tcp_port)
 
-        if confirmation.strip().lower() == "y":
-        # else:
-            tcp_port = self.tcp_comm.find_free_port()
-            response = f"FILE-CONF {tcp_port}"
-            print(f"Sending file {file_name} to {addr} on port {tcp_port}")
-            await self.send_message(addr, response)
-            print(f"Sending file {file_name} to {addr} on port {tcp_port}")
-            self.loop.run_in_executor(None, self.tcp_comm.send_file, file_name, tcp_port)
-
-        else:
-            response = "FILE-DENIED"
-            await self.send_message(addr, response)
+            else:
+                response = "FILE-DENIED"
+                await self.send_message(addr, response)
 
     def update_contacts(self, args):
         request_number, name, ip_address, udp_port = args
