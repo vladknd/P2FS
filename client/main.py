@@ -7,12 +7,12 @@ from c2c_controller import Client2ClientController
 from c2c_udp import Client2ClientUDPCommunication
 from c2c_tcp import Client2ClientTCPCommunication
 
-async def run_user_interface(controller):
+async def run_user_interface(loop, controller):
     while True:
         print("\nOptions:")
         print("1. Request a file from a peer")
         print("2. Exit")
-        choice = await asyncio.to_thread(input, "Enter your choice: ")
+        choice = await loop.run_in_executor(None, input, "Enter your choice: ")
         if choice == '1':
             await asyncio.create_task(controller.request_file('127.0.0.1', 3001, 'newfile')
     )
@@ -33,7 +33,7 @@ async def main():
 
     controller = Client2ClientController(udp, tcp, loop)
 
-    await run_user_interface(controller)
+    await run_user_interface(loop, controller)
 if __name__ == "__main__":
     asyncio.run(main())
 
