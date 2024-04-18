@@ -21,13 +21,43 @@ class Client2ClientUDPCommunication:
         else:
             print("Failed to initialize UDP server")
 
-    async def send_message(self, addr, message):
-        if not self.transport:
-            print("Transport not initialized, message not sent")
-            return  # Prevents trying to send message if transport is not available
-        print(f"Sending UDP message: {message} to {addr}")
-        self.transport.sendto(message.encode(), addr)
-        print(f"Sent UDP message: {message} to {addr}")
+    async def handle_udp_request(self, data, addr):
+        print(f"Received UDP data: {data} from {addr}")
+        parts = data.split()
+        header = parts[0]
+        args = parts[1:]
+
+        if message_type == "REGISTERED":
+            print("Registered with server")
+        elif message_type == "REGISTER-DENIED":
+            print("Registration denied")
+        elif message_type == "PUBLISHED":
+            print("Published files to server")
+        elif message_type == "PUBLISH-DENIED":
+            print("Publish denied")
+        elif message_type == "REMOVED":
+            print("Removed files from server")
+        elif message_type == "REMOVE-DENIED":
+            print("Remove denied")
+        elif message_type == "UPDATE":
+            print("Received update from server")
+            print(args)
+            self.clients_information = args
+        elif message_type == "UPDATE-CONFIRMED":
+            print("Received update contact from server")
+            print(args)
+            self.update_contacts(args)
+        elif message_type == "UPDATE-DENIED":
+            print("Update denied")
+            print(args)
+        elif header == "FILE-REQ":
+            file_name = parts[2]
+            await self.handle_file_request(file_name, addr)
+        elif header == "FILE-CONF":
+            tcp_port = int(parts[1])
+            self.loop.run_in_executor(None, self.tcp_comm.receive_file, addr[0], tcp_port)
+        else:
+            print("Unknown header or message format.")
 
     def connection_made(self, transport):
         self.transport = transport
@@ -46,19 +76,13 @@ class Client2ClientUDPCommunication:
         print(f"Received UDP data: {message} from {addr}")
         asyncio.create_task(self.handle_udp_request(message, addr))
 
-    async def handle_udp_request(self, data, addr):
-        print(f"Received UDP data: {data} from {addr}")
-        parts = data.split()
-        header = parts[0]
-        
-        if header == "FILE-REQ":
-            file_name = parts[2]
-            await self.handle_file_request(file_name, addr)
-        elif header == "FILE-CONF":
-            tcp_port = int(parts[1])
-            self.loop.run_in_executor(None, self.tcp_comm.receive_file, addr[0], tcp_port)
-        else:
-            print("Unknown header or message format.")
+    async def send_message(self, addr, message):
+        if not self.transport:
+            print("Transport not initialized, message not sent")
+            return  # Prevents trying to send message if transport is not available
+        print(f"Sending UDP message: {message} to {addr}")
+        self.transport.sendto(message.encode(), addr)
+        print(f"Sent UDP message: {message} to {addr}")
 
     async def handle_file_request(self, file_name, addr):
         file_path = f"./files/{file_name}.txt"
@@ -90,6 +114,10 @@ class Client2ClientUDPCommunication:
             response = "FILE-DENIED"
             await self.send_message(addr, response)
 
-    
+    def update_contacts(self, args):
+        request_number, name, ip_address, udp_port = args
+        self.host = ip_address
+        self.udp_port = udp_port
+        print(f"Updated contact: {name} {ip_address} {udp_port}")
 
     
