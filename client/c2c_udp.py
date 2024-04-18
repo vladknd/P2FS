@@ -1,6 +1,7 @@
 import asyncio
 import socket
 import os 
+import aioconsole
 
 class Client2ClientUDPCommunication:
     def __init__(self, loop, tcp, bind_ip='127.0.0.1', bind_port=3000):
@@ -102,8 +103,11 @@ class Client2ClientUDPCommunication:
             await self.send_message(addr, response)
             return
 
-        confirmation = await self.loop.run_in_executor(None, input, "Confirm file send (y/n): ")
+        # confirmation = await aioconsole.ainput("Confirm file send (y/n): ")
+        confirmation = await aioconsole.ainput("Confirm file send (y/n): ")
+
         if confirmation.strip().lower() == "y":
+        # else:
             tcp_port = self.tcp_comm.find_free_port()
             response = f"FILE-CONF {tcp_port}"
             print(f"Sending file {file_name} to {addr} on port {tcp_port}")

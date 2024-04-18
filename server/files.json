@@ -1,0 +1,29 @@
+[
+    {
+        "client_name": "Rainbow",
+        "files": [
+            "sample.txt"
+        ]
+    },
+    {
+        "client_name": "Vlad",
+        "files": [
+            "text.txt",
+            "sample.txt"
+        ]
+    },
+    {
+        "client_name": "Vlad",
+        "files": [
+            "text.txt",
+            "sample.txt"
+        ]
+    },
+    {
+        "client_name": "Vlad",
+        "files": [
+            "text.txt",
+            "newfile.txt"
+        ]
+    }
+]

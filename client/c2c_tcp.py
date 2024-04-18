@@ -2,6 +2,9 @@ import socket
 import threading
 
 class Client2ClientTCPCommunication:
+    def __init__(self):
+        self.rq = 0
+
     def receive_file(self, server_ip, server_port):
         print(f"Running in thread: {threading.current_thread().name}")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -58,7 +61,7 @@ class Client2ClientTCPCommunication:
                 with open(f'./files/{file_name}.txt', 'rb') as f:
                     while True:
                         # Read up to 200 bytes from the file
-                        header = f"FILE RQ# {file_name} {chunk_number} "
+                        header = f"FILE {self.rq} {file_name} {chunk_number} "
                         header_length = len(header)
                         body_size = 200 - header_length
                         bytes_read = f.read(body_size)
@@ -71,7 +74,7 @@ class Client2ClientTCPCommunication:
                         if message_size < 200:
                             # This is the last chunk as it contains less than 200 bytes
                             print(f"SENDING CHUNK #: {chunk_number} - {bytes_read.decode()}")
-                            message = f"FILE-END RQ# {file_name} {chunk_number} {bytes_read.decode()}"
+                            message = f"FILE-END {self.rq} {file_name} {chunk_number} {bytes_read.decode()}"
                             print(f"END message to be sent is {message}")
                         else:
                             # Format the message for a regular chunk

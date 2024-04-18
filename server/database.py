@@ -2,66 +2,49 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
-# Create a base class for declarative class definitions
+# Create the database engine
+engine = create_engine('sqlite:///client_data.db', echo=True)
+
+# Create a session factory
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# Create a base class for declarative models
 Base = declarative_base()
 
-# Define the User and File classes using SQLAlchemy ORM
-class User(Base):
-    __tablename__ = 'users'
-
+# Define the Client model
+class Client(Base):
+    __tablename__ = 'clients'
     id = Column(Integer, primary_key=True)
-    port_number = Column(Integer)
+    name = Column(String, nullable=False)
+    ip = Column(String, nullable=False)
+    udp_port = Column(Integer, nullable=False)
+    files = relationship('File', back_populates='client')
 
-    files = relationship("File", back_populates="user")
-
+# Define the File model
 class File(Base):
     __tablename__ = 'files'
-
-    id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    file = Column(String)
-
-    user = relationship("User", back_populates="files")
-
-# Create an engine to connect to the database
-engine = create_engine('sqlite:///database_test.db', echo=True)
+    id = Column(Integer, primary_key=True)
+    filename = Column(String, nullable=False)
+    client_id = Column(Integer, ForeignKey('clients.id'))
+    client = relationship('Client', back_populates='files')
 
 # Create the tables
 Base.metadata.create_all(engine)
 
-# Create a Session class to interact with the database
-Session = sessionmaker(bind=engine)
+# Insert sample data into the tables
+client_data = [
+    Client(name='Alice', ip='192.168.1.100', udp_port=5000),
+    Client(name='Bob', ip='192.168.1.101', udp_port=5001)
+]
 
-# Functions used to interact with the databases
-def insert_user(username, port_number):
-    session = Session()
-    user = User(id=username, port_number=port_number)
-    session.add(user)
-    session.commit()
-    session.close()
+file_data = [
+    File(filename='file1.txt', client_id=1),
+    File(filename='file2.txt', client_id=2)
+]
 
-def insert_file(user_id, file):
-    session = Session()
-    file_obj = File(id=user_id, file=file)
-    session.add(file_obj)
-    session.commit()
-    session.close()
+session.add_all(client_data)
+session.add_all(file_data)
+session.commit()
 
-def fetch_all_users():
-    session = Session()
-    users = session.query(User).all()
-    session.close()
-    return users
-
-def fetch_user_port_number(user_id):
-    session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
-    port_number = user.port_number if user else None
-    session.close()
-    return port_number
-
-def fetch_file_table(user_id):
-    session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
-    files = [file.file for file in user.files] if user else None
-    session.close()
-    return files
+print("Data stored successfully.")
