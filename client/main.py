@@ -35,6 +35,7 @@ async def run_user_interface(loop, controller):
             print("Deregistering with server...")
             await asyncio.create_task(controller.request_to_server("DE-REGISTER"))
         elif choice == "3":
+
             print("Publishing files to server...")
             file_choice = "y"
             file_names = []
