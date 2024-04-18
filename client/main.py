@@ -2,6 +2,7 @@ import socket
 import asyncio
 import os 
 import threading
+import concurrent
 
 from c2c_controller import Client2ClientController
 
@@ -14,7 +15,7 @@ def startup():
     server_port = int(input("Enter the server port: "))
     return name, server_host, server_port
 
-async def run_user_interface(loop, controller): 
+async def run_user_interface(controller): 
     while True:
         print("\nAvailable Commands:")
         print("1. Register with server")
@@ -24,7 +25,7 @@ async def run_user_interface(loop, controller):
         print("5. Request file from peer")
         print("6. Update contact information")
         print("7. Exit")
-        choice = await loop.run_in_executor(None, input, "Enter your choice: ")
+        choice = input("Enter your choice: ")
 
         if choice == "1":
             print("Registering with server...")
@@ -64,17 +65,18 @@ async def run_user_interface(loop, controller):
 
 async def main():
     udp_bind_port = 3000
-    name, server_host, server_port = startup()
+    # name, server_host, server_port = startup()
     loop = asyncio.get_running_loop()
+    # Create a default executor
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
     # udp_bind_port = int(os.getenv('PORT'))
     # print(f"UDP bind port: {udp_bind_port}")
-    local_ip = socket.gethostbyname(socket.gethostname())
+    # local_ip = socket.gethostbyname(socket.gethostname())
+    local_ip = "localhost"
     tcp = Client2ClientTCPCommunication()
     udp = Client2ClientUDPCommunication(loop, tcp, local_ip, udp_bind_port)
-    await asyncio.create_task(udp.start_server()) 
     controller = Client2ClientController(loop, udp, tcp)
-    await run_user_interface(loop, controller)
-
+    await asyncio.create_task(udp.start_server()) 
     
 if __name__ == "__main__":
     asyncio.run(main())

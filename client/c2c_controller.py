@@ -3,7 +3,7 @@ import socket
 import os 
 
 class Client2ClientController:
-    def __init__(self, loop, udp, tcp, name, server_host, server_port):
+    def __init__(self, loop, udp, tcp, name="user0", server_host="localhost", server_port=3001):
         self.udp_comm = udp
         self.tcp_comm = tcp
         self.loop = loop
@@ -23,17 +23,17 @@ class Client2ClientController:
         self.request_number += 1
         if message_type == "REGISTER":
             print("REGISTER in client")
-            self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, self.host, self.udp_port))
+            await self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, self.udp_comm.bind_ip, self.udp_comm.bind_port))
         elif message_type == "DE-REGISTER":
-            self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name))
+            await self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name))
         elif message_type == "PUBLISH":
-            self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, file_list))
+            await self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, file_list))
         elif message_type == "REMOVE":
-            self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, file_list))
+            await self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, file_list))
         elif message_type == "UPDATE-CONTACT":
             ip_address = ip_address if ip_address else self.host
             udp_port = udp_port if udp_port else self.udp_port
-            self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, ip_address, udp_port))
+            await self.udp_comm.send_message((self.server_host, self.server_port), self.construct_message(message_type, self.request_number, self.name, ip_address, udp_port))
         else: 
             print("Invalid message type")
 
